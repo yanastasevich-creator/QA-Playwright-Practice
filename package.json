@@ -1,0 +1,26 @@
+{
+  "name": "qa-playwright-practice",
+  "version": "1.0.0",
+  "description": "Homework for lesson 5 of the course",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test --ui"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yanastasevich-creator/QA-Playwright-Practice.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yanastasevich-creator/QA-Playwright-Practice/issues"
+  },
+  "homepage": "https://github.com/yanastasevich-creator/QA-Playwright-Practice#readme",
+  "devDependencies": {
+    "@faker-js/faker": "^10.4.0",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.5.2"
+  }
+}

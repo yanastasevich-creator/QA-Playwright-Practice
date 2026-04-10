@@ -7,6 +7,16 @@ export class HomePage
         this.profileNavigation = page.locator('.nav-link.dropdown-toggle');
         this.profileLink = page.getByRole('link', { name: 'Profile' });
         this.firstHeader = page.locator('h1');
+        this.articlesPreview = page.locator('.article-preview');
+        this.articlesPreviewProfile = page.locator('.article-preview', {name: "doesn't have articles"});
+        this.homeMenuBtn = page.getByRole('link', { name: 'Home' });
+        this.globalFeed = page.getByRole('button', { name: 'Global Feed' });
+        this.favouriteBtn = page.getByRole('button', { name: 'Favorite ( 0 )' }).first();
+        this.favouriteArticles = page.getByRole('link', { name: 'Favorited Articles' });
+    }
+
+    async openWebsite(page){
+        await page.goto(URL);
     }
 
     async startRegistration(){
@@ -25,4 +35,26 @@ export class HomePage
     getFirstHeader(){
         return this.firstHeader;
     }
+
+    getArticlesPreview(){
+        return this.articlesPreview;
+    }
+
+    async goToHomePage(){
+        await this.homeMenuBtn.click();
+    }
+
+    async navigateToGlobalFeed(){
+        await this.globalFeed.click();
+    }
+
+    async addFirstArticleToFavourites(){
+        await this.favouriteBtn.click();
+    }
+
+    async navigateToFavouriteArticles(){
+        await this.favouriteArticles.click();
+    }
 }
+
+    const URL = 'https://realworld.qa.guru/';

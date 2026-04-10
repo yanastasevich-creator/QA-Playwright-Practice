@@ -10,7 +10,7 @@ const userData = {
   password: faker.internet.password(),
 }
 
-const articleData = {
+const initialArticleData = {
   title: faker.lorem.sentence(),
   topic: faker.lorem.lines({min: 1, max: 2}),
   body: faker.lorem.paragraphs(),
@@ -24,82 +24,88 @@ const newArticleData = {
   tag: faker.lorem.word()
 }
 
-const URL = 'https://realworld.qa.guru/';
-
-
 test('Create new article', async ({ page }) => {  
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
 
-  await page.goto(URL);
+  await home.openWebsite(page);
   await home.startRegistration();
   await registration.signup(userData);
   await home.startNewArticle();
-  await article.createArticle(articleData);
+  await article.addArticle(initialArticleData);
+  await article.publishArticle();
 
-  await expect(article.getArticleHeading()).toContainText(articleData.title);
-  await expect(article.getArticleParagraph()).toContainText(articleData.body);
+  await expect(article.getArticleHeading()).toContainText(initialArticleData.title);
+  await expect(article.getArticleParagraph()).toContainText(initialArticleData.body);
+  await expect(article.articleTag).toContainText(initialArticleData.tag);
+
   await home.navigateToProfile();
-  await expect(home.getFirstHeader()).toContainText(articleData.title);
+  await expect(home.getFirstHeader()).toContainText(initialArticleData.title);
 });
 
-test.only('Edit an article', async ({ page }) => {
+test('Edit an article', async ({ page }) => {
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
 
-  await page.goto(URL);
+  await home.openWebsite(page);
   await home.startRegistration();
   await registration.signup(userData);
   await home.startNewArticle();
-  await article.createArticle(articleData);
+  await article.addArticle(initialArticleData);
+  await article.publishArticle();
+  await article.startArticleEditing();
+  await article.addArticle(newArticleData);
+  await article.updateArticle();
 
-  await page.getByRole('link', { name: ' Edit Article' }).first().click();
-  await page.getByRole('textbox', { name: 'What\'s this article about?' }).click();
-  await page.getByRole('textbox', { name: 'What\'s this article about?' }).fill(newArticleData.topic);
-  await page.getByRole('textbox', { name: 'Article Title' }).click();
-  await page.getByRole('textbox', { name: 'Article Title' }).fill(newArticleData.title);
-  await page.getByRole('textbox', { name: 'Write your article (in' }).click();
-  await page.getByRole('textbox', { name: 'Write your article (in' }).fill(newArticleData.body);
-  await page.getByRole('textbox', { name: 'Enter tags' }).click();
-  await page.getByRole('textbox', { name: 'Enter tags' }).fill(newArticleData.tag);
-  await page.getByRole('button', { name: 'Update Article' }).click();
- 
-  await expect(page.getByRole('heading')).toContainText(newArticleData.title);
-  await expect(page.getByRole('paragraph')).toContainText(newArticleData.body);
-  await expect(page.locator('.tag-default.tag-pill.tag-outline')).toContainText(newArticleData.tag);
+  await expect(article.getArticleHeading()).toContainText(newArticleData.title);
+  await expect(article.getArticleParagraph()).toContainText(newArticleData.body);
+  await expect.soft(article.articleTag).toContainText(newArticleData.tag);
 });
 
-/*test('Delete an article', async ({ page }) => {
+test('Delete an article', async ({ page }) => {
+  const article = new ArticlePage(page);
+  const home = new HomePage(page);
+  const registration = new RegistrationPage(page);
 
-
-
-  await page.getByRole('link', { name: ' Home' }).click();
-  await page.getByText('yan999').click();
-  await page.getByRole('link', { name: ' Profile' }).click();
-  await page.getByText('yan999April 8, 2026 ( 0 )my').click();
-  page.once('dialog', dialog => {
-    console.log(`Dialog message: ${dialog.message()}`);
-    dialog.dismiss().catch(() => {});
-  });
-
+  await home.openWebsite(page);
+  await home.startRegistration();
+  await registration.signup(userData);
+  await home.startNewArticle();
+  await article.addArticle(initialArticleData);
+  await article.publishArticle();
+  await article.acceptArticleRemoval();
+  await article.deleteArticle();
+  await expect(home.articlesPreview).toContainText('Articles not available');
+  await home.navigateToProfile();
+  await expect(home.articlesPreviewProfile).toBeVisible();
 });
 
-test('Add an article to Favourites', async ({ page }) => {
-  await page.getByRole('link', { name: ' Home' }).click();
-  await page.getByRole('button', { name: 'Global Feed' }).click();
+/*test('Add an article to Favourites', async ({ page }) => {
+  const article = new ArticlePage(page);
+  const home = new HomePage(page);
+  const registration = new RegistrationPage(page);
+ // const titleOfFavouriteArticle;
+
+  await home.openWebsite(page);
+  await home.startRegistration();
+  await registration.signup(userData);
+  await home.goToHomePage();
+  await home.navigateToGlobalFeed();
   await page.getByText('Americo Moriarti DDSApril 8, 2026 ( 0 )Tametsi corona carmen.Crebro curia curo').click();
-  await page.getByRole('button', { name: ' Favorite ( 0 )' }).first().click();
+  await home.addFirstArticleToFavourites();
   await expect(page.getByRole('main')).toContainText('( 1 )');
-  await page.getByText('yan999').click();
-  await page.getByRole('link', { name: ' Profile' }).click();
-  await page.getByRole('link', { name: 'Favorited Articles' }).click();
-  await expect(page.locator('h1')).toContainText('Tametsi corona carmen.');
+  await home.navigateToProfile();
+  await home.navigateToFavouriteArticles();
+  // await expect(article.getFirstHeader()).toContainText(titleOfFavouriteArticle);
 });
 
 test('Search articles by a tag', async ({ page }) => {
-  await page.getByRole('link', { name: ' Home' }).click();
+  await home.openWebsite(page);
+  await home.goToHomePage();
+ // const articleTag = 
+
   await page.getByRole('button', { name: 'timor' }).click();
   await expect(page.getByRole('main')).toContainText('timor');
   await expect(page.getByRole('main')).toContainText('timor');

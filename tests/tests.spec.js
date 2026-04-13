@@ -77,28 +77,39 @@ test('Delete an article', async ({ page }) => {
   await article.publishArticle();
   await article.acceptArticleRemoval();
   await article.deleteArticle();
-  await expect(home.articlesPreview).toContainText('Articles not available');
+  await expect(home.articlePreview).toContainText('Articles not available');
   await home.navigateToProfile();
   await expect(home.articlesPreviewProfile).toBeVisible();
 });
 
-/*test('Add an article to Favourites', async ({ page }) => {
+test.only('Add an article to Favourites', async ({ page }) => {
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
- // const titleOfFavouriteArticle;
+  let titleOfFavouriteArticle;
+  let likesCounterOriginal = 0;
+  let likesCounterNew = 0;
 
   await home.openWebsite(page);
   await home.startRegistration();
   await registration.signup(userData);
   await home.goToHomePage();
   await home.navigateToGlobalFeed();
-  await page.getByText('Americo Moriarti DDSApril 8, 2026 ( 0 )Tametsi corona carmen.Crebro curia curo').click();
+  await expect(home.getFirstAuthor()).toBeVisible();
+  titleOfFavouriteArticle = await home.getFirstArticlePreview().innerText();
+  await home.openFirstArticle();
+  await expect(home.getAddToFavouritesBtn()).toBeVisible();
+  likesCounterOriginal = await article.getLikesCounter();
   await home.addFirstArticleToFavourites();
-  await expect(page.getByRole('main')).toContainText('( 1 )');
+  await expect(async () => {
+    likesCounterNew = await article.getLikesCounter();
+    expect(likesCounterNew).toBe(likesCounterOriginal + 1);
+  }).toPass();
   await home.navigateToProfile();
+  await expect(home.getFavouritedArticles()).toBeVisible();
   await home.navigateToFavouriteArticles();
-  // await expect(article.getFirstHeader()).toContainText(titleOfFavouriteArticle);
+  await expect(home.getFirstArticlePreview()).toBeVisible();
+  await expect(home.getFirstHeader()).toContainText(titleOfFavouriteArticle);
 });
 
 test('Search articles by a tag', async ({ page }) => {
@@ -109,4 +120,4 @@ test('Search articles by a tag', async ({ page }) => {
   await page.getByRole('button', { name: 'timor' }).click();
   await expect(page.getByRole('main')).toContainText('timor');
   await expect(page.getByRole('main')).toContainText('timor');
-});*/
+});

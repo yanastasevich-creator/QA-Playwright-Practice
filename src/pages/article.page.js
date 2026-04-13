@@ -14,6 +14,7 @@ export class ArticlePage
         this.articleTag = page.locator('.tag-default.tag-pill.tag-outline');
         this.deleteArticleBtn = page.getByRole('button', { name: 'Delete Article' }).first();
         this.dialog = "dialog";
+        this.likesCounter = page.locator('.btn-outline-primary > .counter').first();
     }
 
     async addArticle(articleData){
@@ -59,5 +60,10 @@ export class ArticlePage
 
     async acceptArticleRemoval(){
         await this.page.on(this.dialog, dialog => dialog.accept());
+    }
+
+    async getLikesCounter(){
+        const text = await this.likesCounter.innerText();
+        return Number(text.replace(/[() ]/g, ''));
     }
 }

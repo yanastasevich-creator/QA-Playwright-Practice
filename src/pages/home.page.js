@@ -5,16 +5,17 @@ export class HomePage
         this.signupLink = page.getByRole('link', { name: 'Sign up' });
         this.newArticleBtn = page.getByRole('link', { name: 'New Article' });
         this.profileNavigation = page.locator('.nav-link.dropdown-toggle');
-        this.profileLink = page.getByRole('link', { name: 'Profile' });
-        this.firstHeader = page.locator('h1');
-        this.articlePreview = page.locator('.preview-link > h1');
-        this.articlesPreviewProfile = page.locator('.article-preview', {name: "doesn't have articles"});
+        this.profileLink = page.getByRole('link', { name: 'Profile'}).first();
+        this.firstHeader = page.locator('.preview-link > h1');
+        this.articlePreview = page.locator('.preview-link');
+        this.articlesPreviewProfile = page.locator('.article-preview');
         this.homeMenuBtn = page.getByRole('link', { name: 'Home' });
         this.globalFeed = page.getByRole('button', { name: 'Global Feed' });
         this.favouriteBtn = page.getByRole('button', { name: 'Favorite' }).first();
         this.favouriteArticles = page.getByRole('link', { name: 'Favorited Articles' });
         this.articlePreviewLink = page.locator('.preview-link');
         this.firstArticleAuthor = page.locator('.article-preview > * > * > .author').first();
+        this.activeNavigationLinkYourFeed = page.locator(".nav-link.active", {name: "Your Feed"});
     }
 
     async openWebsite(page){
@@ -66,12 +67,24 @@ export class HomePage
         await this.articlePreviewLink.first().click();
     }
 
+    async openFirstArticle(){
+        await this.articlePreviewLink.first().click();
+    }
+
     getFirstAuthor(){
         return this.firstArticleAuthor;
     }
 
     getFavouritedArticles(){
         return this.favouriteArticles;
+    }
+
+    getArticlePreviewProfile(){
+        return this.articlesPreviewProfile;
+    }
+
+    getActiveNavigationLinkYourFeed(){
+        return this.activeNavigationLinkYourFeed;
     }
 }
 

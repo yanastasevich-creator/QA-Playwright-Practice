@@ -4,31 +4,25 @@ import { HomePage } from '../src/pages/home.page';
 import { RegistrationPage } from '../src/pages/registration.page';
 import { ArticlePage } from '../src/pages/article.page';
 
-const userData = {
-  username: faker.internet.username(),
-  email: faker.internet.email(),
-  password: faker.internet.password(),
-}
-
-const initialArticleData = {
-  title: faker.lorem.sentence(),
-  topic: faker.lorem.lines({min: 1, max: 2}),
-  body: faker.lorem.paragraphs(),
-  tag: faker.lorem.word()
-}
-
-const newArticleData = {
-  title: faker.lorem.sentence(),
-  topic: faker.lorem.lines({min: 1, max: 2}),
-  body: faker.lorem.paragraphs(),
-  tag: faker.lorem.word()
-}
+const commentText = faker.lorem.word();
 
 test('Create new article', async ({ page }) => {  
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
 
+  const userData = {
+  username: faker.internet.username(),
+  email: faker.internet.email({ lastName: 'yahoo.com' }),
+  password: faker.internet.password(),
+  }
+
+  const initialArticleData = {
+  title: faker.lorem.words(2),
+  topic: faker.lorem.words(1),
+  body: faker.lorem.paragraphs(1),
+  tag: faker.lorem.word()
+}
   await home.openWebsite(page);
   await home.startRegistration();
   await registration.signup(userData);
@@ -38,16 +32,40 @@ test('Create new article', async ({ page }) => {
 
   await expect(article.getArticleHeading()).toContainText(initialArticleData.title);
   await expect(article.getArticleParagraph()).toContainText(initialArticleData.body);
-  await expect(article.articleTag).toContainText(initialArticleData.tag);
+  await expect.soft(article.getArticleTag()).toContainText(initialArticleData.tag);
 
   await home.navigateToProfile();
   await expect(home.getFirstHeader()).toContainText(initialArticleData.title);
+
+  await home.openFirstArticle();
+  await article.acceptItemRemoval();
+  await article.deleteArticle();
 });
 
 test('Edit an article', async ({ page }) => {
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
+
+  const userData = {
+  username: faker.internet.username(),
+  email: faker.internet.email({ lastName: 'yahoo.com' }),
+  password: faker.internet.password(),
+}
+
+const initialArticleData = {
+  title: faker.lorem.words(2),
+  topic: faker.lorem.words(1),
+  body: faker.lorem.paragraphs(1),
+  tag: faker.lorem.word()
+}
+
+const newArticleData = {
+  title: faker.lorem.words(2),
+  topic: faker.lorem.words(1),
+  body: faker.lorem.paragraphs(1),
+  tag: faker.lorem.word()
+}
 
   await home.openWebsite(page);
   await home.startRegistration();
@@ -61,7 +79,11 @@ test('Edit an article', async ({ page }) => {
 
   await expect(article.getArticleHeading()).toContainText(newArticleData.title);
   await expect(article.getArticleParagraph()).toContainText(newArticleData.body);
-  await expect.soft(article.articleTag).toContainText(newArticleData.tag);
+  await expect.soft(article.getArticleTag()).toContainText(newArticleData.tag);
+
+  await home.openFirstArticle();
+  await article.acceptItemRemoval();
+  await article.deleteArticle();
 });
 
 test('Delete an article', async ({ page }) => {
@@ -69,34 +91,80 @@ test('Delete an article', async ({ page }) => {
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
 
+  const userData = {
+  username: faker.internet.username(),
+  email: faker.internet.email({ lastName: 'yahoo.com' }),
+  password: faker.internet.password(),
+}
+
+const initialArticleData = {
+  title: faker.lorem.words(2),
+  topic: faker.lorem.words(1),
+  body: faker.lorem.paragraphs(1),
+  tag: faker.lorem.word()
+}
+
   await home.openWebsite(page);
   await home.startRegistration();
   await registration.signup(userData);
   await home.startNewArticle();
   await article.addArticle(initialArticleData);
   await article.publishArticle();
-  await article.acceptArticleRemoval();
+  await article.acceptItemRemoval();
   await article.deleteArticle();
-  await expect(home.articlePreview).toContainText('Articles not available');
   await home.navigateToProfile();
-  await expect(home.articlesPreviewProfile).toBeVisible();
+  await expect(async () => {
+      const noArticlesText = await home.getArticlePreviewProfile().innerText();
+      expect(noArticlesText).toBe("Articles not available.");
+  }).toPass();
 });
 
-test.only('Add an article to Favourites', async ({ page }) => {
+test('Add an article to Favourites', async ({ page }) => {
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
-  let titleOfFavouriteArticle;
+  let titleOfFavouriteArticleExpected;
   let likesCounterOriginal = 0;
   let likesCounterNew = 0;
 
+  const initialUserData = {
+  username: faker.internet.username(),
+  email: faker.internet.email({ lastName: 'yahoo.com' }),
+  password: faker.internet.password(),
+  }
+
+const newUserData = {
+  username: faker.internet.username(),
+  email: faker.internet.email({ provider: 'yahoo.com' }),
+  password: faker.internet.password(),
+}
+
+const initialArticleData = {
+  title: faker.lorem.words(2),
+  topic: faker.lorem.words(1),
+  body: faker.lorem.paragraphs(1),
+  tag: faker.lorem.word()
+}
+
   await home.openWebsite(page);
   await home.startRegistration();
-  await registration.signup(userData);
+  await registration.signup(initialUserData);
+  await home.startNewArticle();
+  await article.addArticle(initialArticleData);
+  await article.publishArticle();
+  await home.navigateToProfile();
+  await registration.logout();
+  await page.reload();
+
+  await home.startRegistration();
+  await registration.signup(newUserData);
   await home.goToHomePage();
-  await home.navigateToGlobalFeed();
-  await expect(home.getFirstAuthor()).toBeVisible();
-  titleOfFavouriteArticle = await home.getFirstArticlePreview().innerText();
+  await page.reload();
+    await home.navigateToGlobalFeed();
+ await expect(async () => {
+    await expect(home.getFirstArticlePreview()).toBeVisible();
+  }).toPass();
+  titleOfFavouriteArticleExpected = await home.getFirstArticlePreview().innerText();
   await home.openFirstArticle();
   await expect(home.getAddToFavouritesBtn()).toBeVisible();
   likesCounterOriginal = await article.getLikesCounter();
@@ -109,15 +177,74 @@ test.only('Add an article to Favourites', async ({ page }) => {
   await expect(home.getFavouritedArticles()).toBeVisible();
   await home.navigateToFavouriteArticles();
   await expect(home.getFirstArticlePreview()).toBeVisible();
-  await expect(home.getFirstHeader()).toContainText(titleOfFavouriteArticle);
+  const titleOfFavouriteArticleActual = await home.getFirstArticlePreview().innerText();
+  expect(titleOfFavouriteArticleActual).toBe(titleOfFavouriteArticleExpected);
+
+  await home.navigateToProfile();
+  await registration.logout();
+  await page.reload();
+  await home.startRegistration();
+  await registration.login(initialUserData);
+  await home.navigateToProfile();
+  await home.openFirstArticle();
+  await article.acceptItemRemoval();
+  await article.deleteArticle();
 });
 
-test('Search articles by a tag', async ({ page }) => {
-  await home.openWebsite(page);
-  await home.goToHomePage();
- // const articleTag = 
+test('Leave and remove the comment', async ({ page }) => {
+  const article = new ArticlePage(page);
+  const home = new HomePage(page);
+  const registration = new RegistrationPage(page);
 
-  await page.getByRole('button', { name: 'timor' }).click();
-  await expect(page.getByRole('main')).toContainText('timor');
-  await expect(page.getByRole('main')).toContainText('timor');
+   const initialUserData = {
+  username: faker.internet.username(),
+  email: faker.internet.email({ lastName: 'yahoo.com' }),
+  password: faker.internet.password(),
+  }
+
+const newUserData = {
+  username: faker.internet.username(),
+  email: faker.internet.email({ provider: 'yahoo.com' }),
+  password: faker.internet.password(),
+}
+
+const initialArticleData = {
+  title: faker.lorem.words(2),
+  topic: faker.lorem.words(1),
+  body: faker.lorem.paragraphs(1),
+  tag: faker.lorem.word()
+}
+
+  await home.openWebsite(page);
+  await home.startRegistration();
+  await registration.signup(initialUserData);
+  await home.startNewArticle();
+  await article.addArticle(initialArticleData);
+  await article.publishArticle();
+  await home.navigateToProfile();
+  await registration.logout();
+  await page.reload();
+
+  await home.startRegistration();
+  await registration.signup(newUserData);
+  await home.goToHomePage();
+  await page.reload();
+    await home.navigateToGlobalFeed();
+ await expect(async () => {
+    await expect(home.getFirstArticlePreview()).toBeVisible();
+  }).toPass();
+  await home.openFirstArticle();
+  await article.addComment(commentText);
+  expect(await article.getCommentText()).toBe(commentText);
+  await article.acceptItemRemoval();
+  await article.deleteComment();
+
+  await home.navigateToProfile();
+  await registration.logout();
+  await page.reload();
+  await home.startRegistration();
+  await registration.login(initialUserData);
+  await home.navigateToProfile();
+  await home.openFirstArticle();
+  await article.deleteArticle();
 });

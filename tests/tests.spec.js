@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 import {faker} from '@faker-js/faker'
 import { HomePage } from '../src/pages/home.page';
 import { RegistrationPage } from '../src/pages/registration.page';
-import { ArticlePage } from '../src/pages/article.page';
+import { ArticlePage } from '../src/pages/createArticle.page';
+import { AuthorizationPage } from '../src/pages/authorization.page';
+import { EditArticlePage } from '../src/pages/editArticle.page';
 
 const commentText = faker.lorem.word();
 
@@ -10,6 +12,7 @@ test('Create new article', async ({ page }) => {
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
+  const articleEditing = new EditArticlePage(page);
 
   const userData = {
   username: faker.internet.username(),
@@ -27,25 +30,26 @@ test('Create new article', async ({ page }) => {
   await home.startRegistration();
   await registration.signup(userData);
   await home.startNewArticle();
-  await article.addArticle(initialArticleData);
+  await article.fillArticleWithData(initialArticleData);
   await article.publishArticle();
 
-  await expect(article.getArticleHeading()).toContainText(initialArticleData.title);
-  await expect(article.getArticleParagraph()).toContainText(initialArticleData.body);
-  await expect.soft(article.getArticleTag()).toContainText(initialArticleData.tag);
+  await expect(articleEditing.getArticleHeading()).toContainText(initialArticleData.title);
+  await expect(articleEditing.getArticleParagraph()).toContainText(initialArticleData.body);
+  await expect.soft(articleEditing.getArticleTag()).toContainText(initialArticleData.tag);
 
   await home.navigateToProfile();
   await expect(home.getFirstHeader()).toContainText(initialArticleData.title);
 
   await home.openFirstArticle();
-  await article.acceptItemRemoval();
-  await article.deleteArticle();
+  await articleEditing.acceptItemRemoval();
+  await articleEditing.deleteArticle();
 });
 
 test('Edit an article', async ({ page }) => {
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
+  const articleEditing = new EditArticlePage(page);
 
   const userData = {
   username: faker.internet.username(),
@@ -71,25 +75,26 @@ const newArticleData = {
   await home.startRegistration();
   await registration.signup(userData);
   await home.startNewArticle();
-  await article.addArticle(initialArticleData);
+  await article.fillArticleWithData(initialArticleData);
   await article.publishArticle();
-  await article.startArticleEditing();
-  await article.addArticle(newArticleData);
-  await article.updateArticle();
+  await articleEditing.startArticleEditing();
+  await article.fillArticleWithData(newArticleData);
+  await articleEditing.updateArticle();
 
-  await expect(article.getArticleHeading()).toContainText(newArticleData.title);
-  await expect(article.getArticleParagraph()).toContainText(newArticleData.body);
-  await expect.soft(article.getArticleTag()).toContainText(newArticleData.tag);
+  await expect(articleEditing.getArticleHeading()).toContainText(newArticleData.title);
+  await expect(articleEditing.getArticleParagraph()).toContainText(newArticleData.body);
+  await expect.soft(articleEditing.getArticleTag()).toContainText(newArticleData.tag);
 
   await home.openFirstArticle();
-  await article.acceptItemRemoval();
-  await article.deleteArticle();
+  await articleEditing.acceptItemRemoval();
+  await articleEditing.deleteArticle();
 });
 
 test('Delete an article', async ({ page }) => {
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
+  const articleEditing = new EditArticlePage(page);
 
   const userData = {
   username: faker.internet.username(),
@@ -108,10 +113,10 @@ const initialArticleData = {
   await home.startRegistration();
   await registration.signup(userData);
   await home.startNewArticle();
-  await article.addArticle(initialArticleData);
+  await article.fillArticleWithData(initialArticleData);
   await article.publishArticle();
-  await article.acceptItemRemoval();
-  await article.deleteArticle();
+  await articleEditing.acceptItemRemoval();
+  await articleEditing.deleteArticle();
   await home.navigateToProfile();
   await expect(async () => {
       const noArticlesText = await home.getArticlePreviewProfile().innerText();
@@ -123,6 +128,9 @@ test('Add an article to Favourites', async ({ page }) => {
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
+  const authorization = new AuthorizationPage(page);
+  const articleEditing = new EditArticlePage(page);
+
   let titleOfFavouriteArticleExpected;
   let likesCounterOriginal = 0;
   let likesCounterNew = 0;
@@ -150,10 +158,10 @@ const initialArticleData = {
   await home.startRegistration();
   await registration.signup(initialUserData);
   await home.startNewArticle();
-  await article.addArticle(initialArticleData);
+  await article.fillArticleWithData(initialArticleData);
   await article.publishArticle();
   await home.navigateToProfile();
-  await registration.logout();
+  await home.logout();
   await page.reload();
 
   await home.startRegistration();
@@ -167,10 +175,10 @@ const initialArticleData = {
   titleOfFavouriteArticleExpected = await home.getFirstArticlePreview().innerText();
   await home.openFirstArticle();
   await expect(home.getAddToFavouritesBtn()).toBeVisible();
-  likesCounterOriginal = await article.getLikesCounter();
+  likesCounterOriginal = await home.getLikesCounter();
   await home.addFirstArticleToFavourites();
   await expect(async () => {
-    likesCounterNew = await article.getLikesCounter();
+    likesCounterNew = await home.getLikesCounter();
     expect(likesCounterNew).toBe(likesCounterOriginal + 1);
   }).toPass();
   await home.navigateToProfile();
@@ -181,20 +189,22 @@ const initialArticleData = {
   expect(titleOfFavouriteArticleActual).toBe(titleOfFavouriteArticleExpected);
 
   await home.navigateToProfile();
-  await registration.logout();
+  await home.logout();
   await page.reload();
   await home.startRegistration();
-  await registration.login(initialUserData);
+  await authorization.login(initialUserData);
   await home.navigateToProfile();
   await home.openFirstArticle();
-  await article.acceptItemRemoval();
-  await article.deleteArticle();
+  await articleEditing.acceptItemRemoval();
+  await articleEditing.deleteArticle();
 });
 
 test('Leave and remove the comment', async ({ page }) => {
   const article = new ArticlePage(page);
   const home = new HomePage(page);
   const registration = new RegistrationPage(page);
+  const authorization = new AuthorizationPage(page);
+  const articleEditing = new EditArticlePage(page);
 
    const initialUserData = {
   username: faker.internet.username(),
@@ -219,10 +229,10 @@ const initialArticleData = {
   await home.startRegistration();
   await registration.signup(initialUserData);
   await home.startNewArticle();
-  await article.addArticle(initialArticleData);
+  await article.fillArticleWithData(initialArticleData);
   await article.publishArticle();
   await home.navigateToProfile();
-  await registration.logout();
+  await home.logout();
   await page.reload();
 
   await home.startRegistration();
@@ -234,17 +244,18 @@ const initialArticleData = {
     await expect(home.getFirstArticlePreview()).toBeVisible();
   }).toPass();
   await home.openFirstArticle();
-  await article.addComment(commentText);
-  expect(await article.getCommentText()).toBe(commentText);
-  await article.acceptItemRemoval();
-  await article.deleteComment();
+  await page.reload();
+  await articleEditing.addComment(commentText);
+  expect(await articleEditing.getCommentText()).toBe(commentText);
+  await articleEditing.acceptItemRemoval();
+  await articleEditing.deleteComment();
 
   await home.navigateToProfile();
-  await registration.logout();
+  await home.logout();
   await page.reload();
   await home.startRegistration();
-  await registration.login(initialUserData);
+  await authorization.login(initialUserData);
   await home.navigateToProfile();
   await home.openFirstArticle();
-  await article.deleteArticle();
+  await articleEditing.deleteArticle();
 });

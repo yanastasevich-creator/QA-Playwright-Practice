@@ -1,41 +1,18 @@
-export class ArticlePage
+export class EditArticlePage
 {
     constructor(page){
         this.page = page;
-        this.articleTitleInput = page.getByRole('textbox', { name: 'Article Title' });
-        this.articleBodyInput = page.getByRole('textbox', { name: 'Write your article (in' })
-        this.articleTopicInput =  page.getByRole('textbox', { name: 'What\'s this article about?' });
-        this.articleTagInput = page.getByRole('textbox', { name: 'Enter tags' });
-        this.publishArticleBtn = page.getByRole('button', { name: 'Publish Article' });
         this.articleHeading = page.getByRole('heading');
         this.articleParagraph = page.getByRole('paragraph');
         this.editArticleBtn = page.getByRole('link', { name: 'Edit Article' }).first();
         this.updateArticleBtn = page.getByRole('button', { name: 'Update Article' });
         this.deleteArticleBtn = page.getByRole('button', { name: 'Delete Article' }).first();
         this.dialog = "dialog";
-        this.likesCounter = page.locator('.btn-outline-primary > .counter').first();
         this.commentInput = page.getByRole('textbox', { name: 'Write a comment...' });
         this.postCommentBtn = page.getByRole('button', { name: 'Post Comment' });
         this.articleTag = page.locator('.tag-default.tag-pill.tag-outline');
         this.comment = page.locator(".card > .card-block > .card-text").last();
         this.commentDeleteIcon = page.locator(".ion-trash-a", { hasText: /^$/ }).last();
-    }
-
-    async addArticle(articleData){
-        const {title, topic, body, tag} = articleData;
-
-        await this.articleTitleInput.click();
-        await this.articleTitleInput.fill(title);
-        await this.articleTopicInput.click();
-        await this.articleTopicInput.fill(topic);
-        await this.articleBodyInput.click();
-        await this.articleBodyInput.fill(body);
-        await this.articleTagInput.click();
-        await this.articleTagInput.fill(tag);
-    }
-
-    async publishArticle(){
-        await this.publishArticleBtn.click();
     }
 
     getArticleHeading(){
@@ -64,11 +41,6 @@ export class ArticlePage
 
     async acceptItemRemoval(){
         await this.page.on(this.dialog, dialog => dialog.accept());
-    }
-
-    async getLikesCounter(){
-        const text = await this.likesCounter.innerText();
-        return Number(text.replace(/[() ]/g, ''));
     }
 
     async addComment(comment){

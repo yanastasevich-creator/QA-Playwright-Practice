@@ -16,6 +16,8 @@ export class HomePage
         this.articlePreviewLink = page.locator('.preview-link');
         this.firstArticleAuthor = page.locator('.article-preview > * > * > .author').first();
         this.activeNavigationLinkYourFeed = page.locator(".nav-link.active", {name: "Your Feed"});
+        this.logoutBtn = page.getByRole('link', { name: 'Logout' });
+        this.likesCounter = page.locator('.btn-outline-primary > .counter').first();
     }
 
     async openWebsite(page){
@@ -85,6 +87,15 @@ export class HomePage
 
     getActiveNavigationLinkYourFeed(){
         return this.activeNavigationLinkYourFeed;
+    }
+
+    async logout(){
+        await this.logoutBtn.click();
+    }
+
+    async getLikesCounter(){
+        const text = await this.likesCounter.innerText();
+        return Number(text.replace(/[() ]/g, ''));
     }
 }
 

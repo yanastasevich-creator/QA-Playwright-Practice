@@ -25,4 +25,9 @@ export class ArticlePage
     async publishArticle(){
         await this.publishArticleBtn.click();
     }
+
+    async createArticle(articleData){
+        await this.fillArticleWithData(articleData);
+        await this.publishArticle();
+    }
 }

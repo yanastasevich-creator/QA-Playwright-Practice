@@ -24,6 +24,10 @@ export class HomePage
         await page.goto(URL);
     }
 
+    getSignUpBtn(){
+        return this.signupLink;
+    }
+
     async startRegistration(){
         await this.signupLink.click();
     }

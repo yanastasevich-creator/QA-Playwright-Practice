@@ -1,7 +1,9 @@
-export class EditArticlePage
+import { ArticlePage } from "./createArticle.page";
+
+export class EditArticlePage extends ArticlePage
 {
     constructor(page){
-        this.page = page;
+        super(page);
         this.articleHeading = page.getByRole('heading');
         this.articleParagraph = page.getByRole('paragraph');
         this.editArticleBtn = page.getByRole('link', { name: 'Edit Article' }).first();
@@ -31,7 +33,8 @@ export class EditArticlePage
         await this.editArticleBtn.click();
     }
 
-    async updateArticle(){
+    async updateArticle(articleData){
+        await this.fillArticleWithData(articleData);
         await this.updateArticleBtn.click();
     }   
 

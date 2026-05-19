@@ -30,8 +30,7 @@ test('Create new article', async ({ page }) => {
   await home.startRegistration();
   await registration.signup(userData);
   await home.startNewArticle();
-  await article.fillArticleWithData(initialArticleData);
-  await article.publishArticle();
+  await article.createArticle(initialArticleData);
 
   await expect(articleEditing.getArticleHeading()).toContainText(initialArticleData.title);
   await expect(articleEditing.getArticleParagraph()).toContainText(initialArticleData.body);
@@ -75,11 +74,9 @@ const newArticleData = {
   await home.startRegistration();
   await registration.signup(userData);
   await home.startNewArticle();
-  await article.fillArticleWithData(initialArticleData);
-  await article.publishArticle();
+  await article.createArticle(initialArticleData);
   await articleEditing.startArticleEditing();
-  await article.fillArticleWithData(newArticleData);
-  await articleEditing.updateArticle();
+  await articleEditing.updateArticle(newArticleData);
 
   await expect(articleEditing.getArticleHeading()).toContainText(newArticleData.title);
   await expect(articleEditing.getArticleParagraph()).toContainText(newArticleData.body);
@@ -113,8 +110,7 @@ const initialArticleData = {
   await home.startRegistration();
   await registration.signup(userData);
   await home.startNewArticle();
-  await article.fillArticleWithData(initialArticleData);
-  await article.publishArticle();
+  await article.createArticle(initialArticleData);
   await articleEditing.acceptItemRemoval();
   await articleEditing.deleteArticle();
   await home.navigateToProfile();
@@ -158,17 +154,18 @@ const initialArticleData = {
   await home.startRegistration();
   await registration.signup(initialUserData);
   await home.startNewArticle();
-  await article.fillArticleWithData(initialArticleData);
-  await article.publishArticle();
+  await article.createArticle(initialArticleData);
   await home.navigateToProfile();
   await home.logout();
   await page.reload();
 
+  await expect(async () => {
+    await expect(home.getSignUpBtn()).toBeVisible();
+  }).toPass();
   await home.startRegistration();
   await registration.signup(newUserData);
   await home.goToHomePage();
-  await page.reload();
-    await home.navigateToGlobalFeed();
+  await home.navigateToGlobalFeed();
  await expect(async () => {
     await expect(home.getFirstArticlePreview()).toBeVisible();
   }).toPass();
@@ -229,8 +226,7 @@ const initialArticleData = {
   await home.startRegistration();
   await registration.signup(initialUserData);
   await home.startNewArticle();
-  await article.fillArticleWithData(initialArticleData);
-  await article.publishArticle();
+  await article.createArticle(initialArticleData);
   await home.navigateToProfile();
   await home.logout();
   await page.reload();
